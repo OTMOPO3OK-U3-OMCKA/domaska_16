@@ -1,6 +1,9 @@
+from my_package.datetime_convertor import Conver
 from my_package.modeles import *
 from flask import request, jsonify
 from datetime import date
+import json
+
 
 def create_vies():
     @app.route("/users", methods=["GET", "POST"])
@@ -20,12 +23,13 @@ def create_vies():
                 })
         elif request.method == "POST":
             with db.session.begin():
-                user = User(first_name="Ron",
-                            last_name="Rico",
-                            age=34,
-                            email="rrico@mail.ru",
-                            role="executor",
-                            phone="89990004477")
+                user2 = json.loads(request.data)
+                user = User(first_name=user2["first_name"],
+                            last_name=user2["last_name"],
+                            age=user2["age"],
+                            email=user2["email"],
+                            role=user2["role"],
+                            phone=user2["phone"],)
                 db.session.add(user)
                 return jsonify({"user": "added"})
         return jsonify(users_list)
@@ -38,7 +42,13 @@ def create_vies():
                 db.session.delete(i)
                 return jsonify({"user is deleted": id})
             elif request.method == "PUT":
-                i.age = 35
+                user2 = json.loads(request.data)
+                i.first_name = user2["first_name"]
+                i.last_name = user2["last_name"]
+                i.age = user2["age"]
+                i.email = user2["email"]
+                i.role = user2["role"]
+                i.phone = user2["phone"]
                 db.session.add(i)
         return jsonify({
             "id": i.id,
@@ -68,14 +78,17 @@ def create_vies():
                 })
             return jsonify(ord)
         elif request.method == "POST":
-            o = Order(name="ddddddddd",
-                      description="ffffffffffffff",
-                      start_date=date(2000, 3, 6),
-                      end_date=date(2000, 3, 8),
-                      address="221b, Baker street",
-                      price=3000,
-                      customer_id=6,
-                      executor_id=11)
+            user2 = json.loads(request.data)
+            start_date = Conver(user2["start_date"])
+            end_date = Conver(user2["end_date"])
+            o = Order(name=user2["name"],
+                      description=user2["description"],
+                      start_date=date(start_date.yy, start_date.mm, start_date.dd),
+                      end_date=date(end_date.yy, end_date.mm, end_date.dd),
+                      address=user2["address"],
+                      price=user2["price"],
+                      customer_id=user2["customer_id"],
+                      executor_id=user2["executor_id"])
             db.session.add(o)
             db.session.commit()
             return jsonify({"дело": "добавлено"})
@@ -88,9 +101,18 @@ def create_vies():
                 db.session.delete(i)
                 return jsonify({"удалён": id})
             elif request.method == "PUT":
-                i.price = 5000
+                user2 = json.loads(request.data)
+                start_date = Conver(user2["start_date"])
+                end_date = Conver(user2["end_date"])
+                i.name = user2["name"]
+                i.description = user2["description"]
+                i.start_date = date(start_date.yy, start_date.mm, start_date.dd)
+                i.end_date = date(end_date.yy, end_date.mm, end_date.dd)
+                i.address = user2["address"]
+                i.price = user2["price"]
+                i.customer_id = user2["customer_id"]
+                i.executor_id = user2["executor_id"]
                 db.session.add(i)
-                return jsonify({"подорожал": "на 2000"})
         return jsonify({
                 "id": i.id,
                 "name": i.name,
@@ -116,11 +138,16 @@ def create_vies():
                 })
             return jsonify(offr)
         elif request.method == "POST":
-            o = Offer(order_id=1,
-                      executor_id=2)
-            db.session.add(o)
+            user2 = json.loads(request.data)
+            i = Offer(order_id=user2["order_id"],
+                      executor_id=user2["executor_id"])
+            db.session.add(i)
             db.session.commit()
-            return jsonify({"что-то": "добавили"})
+            return jsonify({
+                    "id": i.id,
+                    "order_id": i.order_id,
+                    "executor_id": i.executor_id,
+                })
 
     @app.route("/offers/<int:id>", methods=["GET", "DELETE", "PUT"])
     def get_offers_id(id):
@@ -130,14 +157,14 @@ def create_vies():
                 db.session.delete(i)
                 return jsonify({"удален": id})
             elif request.method == "PUT":
-                i.order_id = 5
+                user2 = json.loads(request.data)
+                i.order_id = user2["order_id"]
+                i.executor_id = user2["executor_id"]
                 db.session.add(i)
-                return jsonify({"изменен": id})
         return jsonify({
                 "id": i.id,
                 "order_id": i.order_id,
-                "executor_id": i.executor_id,
-            })
+                "executor_id": i.executor_id})
 
 
 create_vies()
